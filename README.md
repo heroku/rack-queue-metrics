@@ -10,11 +10,11 @@ First, add `heroku-unicorn-metrics` to your Gemfile:
 gem 'heroku-unicorn-metrics'
 ```
 
-Then subscribe to the `unicorn.metrics.request` notifcation in your Rails app. For example, to print queue information to your logs, add the following to `config/initializers/notifcations.rb:
+Then subscribe to the `unicorn.metrics.queue` notifcation in your Rails app. For example, to print queue information to your logs, add the following to `config/initializers/notifcations.rb:
 
 ```
 # config/initializers/notifications.rb
-ActiveSupport::Notifications.subscribe(/unicorn.metrics.request/) do |*args|
+ActiveSupport::Notifications.subscribe(/unicorn.metrics.queue/) do |*args|
   event = ActiveSupport::Notifications::Event.new(*args)
   payload = event.payload
 
