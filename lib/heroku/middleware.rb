@@ -17,7 +17,6 @@ module Heroku
 
         stats[:addr] = ADDR
         stats[:queue_time] = headers['X-Request-Start'] ? (start_time - headers['X-Request-Start'].to_f).round : 0
-        stats[:request_time] = (Time.now.to_f*1000.0 - start_time).round
 
         ActiveSupport::Notifications.instrument("unicorn.metrics.queue", stats)
 
