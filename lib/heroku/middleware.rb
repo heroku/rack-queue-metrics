@@ -3,19 +3,20 @@ require 'socket'
 module Heroku
   module UnicornMetrics
     class Queue
-      ADDR = IPSocket.getaddress(Socket.gethostname).to_s+':'+ENV['PORT']
-
+      
       def initialize(app)
         @app = app
       end
 
       def call(env)
+        return @app.call(env) unless ENV['PORT']
+
         start_time = Time.now.to_f*1000.0
         stats = raindrops_stats
 
         status, headers, body = @app.call(env)
 
-        stats[:addr] = ADDR
+        stats[:addr] = IPSocket.getaddress(Socket.gethostname).to_s + ':'+ENV['PORT']
         stats[:queue_time] = headers['X-Request-Start'] ? (start_time - headers['X-Request-Start'].to_f).round : 0
 
         ActiveSupport::Notifications.instrument("unicorn.metrics.queue", stats)
