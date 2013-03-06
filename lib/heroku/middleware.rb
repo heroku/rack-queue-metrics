@@ -2,7 +2,7 @@ require 'socket'
 
 module Heroku
   module UnicornMetrics
-    class QueueTime
+    class Queue
       ADDR = IPSocket.getaddress(Socket.gethostname).to_s+':'+ENV['PORT']
 
       def initialize(app)
@@ -19,7 +19,7 @@ module Heroku
         stats[:queue_time] = headers['X-Request-Start'] ? (start_time - headers['X-Request-Start'].to_f).round : 0
         stats[:request_time] = (Time.now.to_f*1000.0 - start_time).round
 
-        ActiveSupport::Notifications.instrument("unicorn.metrics.request", stats)
+        ActiveSupport::Notifications.instrument("unicorn.metrics.queue", stats)
 
         [status, headers, body]
       end
