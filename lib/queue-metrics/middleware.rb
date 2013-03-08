@@ -1,8 +1,8 @@
 require 'socket'
 
-module Heroku
-  module UnicornMetrics
-    class Queue
+module Rack
+  module QueueMetrics
+    class Middleware
       
       def initialize(app)
         @app = app
@@ -19,7 +19,8 @@ module Heroku
         stats[:addr] = IPSocket.getaddress(Socket.gethostname).to_s + ':'+ENV['PORT']
         stats[:queue_time] = headers['X-Request-Start'] ? (start_time - headers['X-Request-Start'].to_f).round : 0
 
-        ActiveSupport::Notifications.instrument("unicorn.metrics.queue", stats)
+        puts "at=metric measure=rack.queue-metrics addr=#{stats[:addr]} queue_time=#{stats[:queue_time]} queue_depth=#{stats[:requests][:queued]}"
+        ActiveSupport::Notifications.instrument("rack.queue-metrics", stats) if defined?(ActiveSupport::Notifications)
 
         [status, headers, body]
       end

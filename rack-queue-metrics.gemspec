@@ -1,21 +1,20 @@
 # -*- encoding: utf-8 -*-
 $:.push File.expand_path("../lib", __FILE__)
-require "heroku/version"
+require "queue-metrics/version"
 
 Gem::Specification.new do |s|
-  s.name        = "heroku-unicorn-metrics"
-  s.version     = Heroku::UnicornMetrics::VERSION
+  s.name        = "rack-queue-metrics"
+  s.version     = Rack::QueueMetrics::VERSION
   s.authors     = ["dominic (Dominic Dagradi)"]
   s.email       = ["dominic@heroku.com"]
-  s.homepage    = "http://github.com/heroku/heroku-unicorn-metrics"
-  s.summary     = %q{Additional metrics for Heroku apps using Unicorn}
-  s.description = %q{Additional metrics for Heroku apps using Unicorn}
+  s.homepage    = "http://github.com/heroku/rack-queue-metrics"
+  s.summary     = %q{Measure queueing metrics for Rack apps}
+  s.description = %q{Measure queueing metrics for Rack apps}
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
 
-  s.add_dependency 'unicorn'
-  s.add_dependency 'rails', ">= 3.0"
+  s.add_dependency 'raindrops'
 end
