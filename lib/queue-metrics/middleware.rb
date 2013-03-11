@@ -3,29 +3,42 @@ require 'socket'
 module Rack
   module QueueMetrics
     class Middleware
-      
+
       def initialize(app)
         @app = app
+        @addr = IPSocket.getaddress(Socket.gethostname).to_s + ':'+ENV['PORT']
+        @instrument_name = "rack.queue-metrics"
+        Thread.new {report(1)}
       end
 
       def call(env)
         return @app.call(env) unless ENV['PORT']
-
-        start_time = Time.now.to_f*1000.0
-        stats = raindrops_stats
-
         status, headers, body = @app.call(env)
-
-        stats[:addr] = IPSocket.getaddress(Socket.gethostname).to_s + ':'+ENV['PORT']
-        stats[:queue_time] = env["HTTP_X_REQUEST_START"] ? (start_time - env["HTTP_X_REQUEST_START"].to_f).round : 0
-
-        puts "at=metric measure=rack.queue-metrics addr=#{stats[:addr]} queue_time=#{stats[:queue_time]} queue_depth=#{stats[:requests][:queued]}"
-        ActiveSupport::Notifications.instrument("rack.queue-metrics", stats) if defined?(ActiveSupport::Notifications)
-
         [status, headers, body]
       end
 
     private
+
+      def report(interval)
+        loop do
+          stats = raindrops_stats
+          notify(stats) if should_notify
+          $stdout.puts(["measure=#{@instrument_name}",
+            "addr=#{@addr}",
+            "queue_depth=#{stats[:requests][:queued]}"].join(' '))
+          sleep(interval)
+        end
+      end
+
+      def should_notify?
+        if defined?(ActiveSupport::Notifications)
+          ActiveSupport::Notifications.notifier.listening?(@instrument_name)
+        end
+      end
+
+      def notify(data)
+        ActiveSupport::Notifications.instrument(@instrument_name, data)
+      end
 
       def raindrops_stats
         if defined? Raindrops::Linux.tcp_listener_stats
