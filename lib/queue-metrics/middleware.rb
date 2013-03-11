@@ -3,8 +3,9 @@ require 'socket'
 module Rack
   module QueueMetrics
     class Middleware
-      
+
       def initialize(app)
+        @addr = IPSocket.getaddress(Socket.gethostname).to_s + ':'+ENV['PORT']
         @app = app
       end
 
@@ -16,10 +17,9 @@ module Rack
 
         status, headers, body = @app.call(env)
 
-        stats[:addr] = IPSocket.getaddress(Socket.gethostname).to_s + ':'+ENV['PORT']
         stats[:queue_time] = env["HTTP_X_REQUEST_START"] ? (start_time - env["HTTP_X_REQUEST_START"].to_f).round : 0
 
-        puts "at=metric measure=rack.queue-metrics addr=#{stats[:addr]} queue_time=#{stats[:queue_time]} queue_depth=#{stats[:requests][:queued]}"
+        puts "at=metric measure=rack.queue-metrics addr=#{@addr} queue_time=#{stats[:queue_time]} queue_depth=#{stats[:requests][:queued]}"
         ActiveSupport::Notifications.instrument("rack.queue-metrics", stats) if defined?(ActiveSupport::Notifications)
 
         [status, headers, body]
