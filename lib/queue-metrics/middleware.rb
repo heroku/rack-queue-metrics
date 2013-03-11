@@ -8,14 +8,12 @@ module Rack
         @app = app
         @addr = IPSocket.getaddress(Socket.gethostname).to_s + ':'+ENV['PORT']
         @instrument_name = "rack.queue-metrics"
-        @should_notify = should_notify?
         Thread.new {report(1)}
       end
 
       def call(env)
         return @app.call(env) unless ENV['PORT']
         status, headers, body = @app.call(env)
-        notify(raindrops_stats) if @should_notify
         [status, headers, body]
       end
 
@@ -23,9 +21,11 @@ module Rack
 
       def report(interval)
         loop do
+          stats = raindrops_stats
+          notify(stats) if should_notify
           $stdout.puts(["measure=#{@instrument_name}",
             "addr=#{@addr}",
-            "queue_depth=#{raindrops_stats[:requests][:queued]}"].join(' '))
+            "queue_depth=#{stats[:requests][:queued]}"].join(' '))
           sleep(interval)
         end
       end
