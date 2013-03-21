@@ -22,7 +22,7 @@ module Rack
       def report(interval)
         loop do
           stats = raindrops_stats
-          notify(stats) if should_notify
+          notify(stats) if should_notify?
           $stdout.puts(["measure=#{@instrument_name}",
             "addr=#{@addr}",
             "queue_depth=#{stats[:requests][:queued]}"].join(' '))
