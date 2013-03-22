@@ -11,7 +11,7 @@ module Rack
       end
 
       def call(env)
-        dyno_start    = Time.now.to_f * 1000.0
+        dyno_start    = (Time.now.to_f * 1000.0).round
         request_start = (env["HTTP_X_REQUEST_START"] || 0).to_i
         request_id    = env["HTTP_HEROKU_REQUEST_ID"]
         report = "at=metric measure=#{@instrument_name} dyno_start=#{dyno_start}"
