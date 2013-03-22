@@ -11,14 +11,13 @@ module Rack
       end
 
       def call(env)
-        start_time   = Time.now.to_f*1000.0
-        request_time = env["HTTP_X_REQUEST_START"] || 0
-        request_id   = env["HTTP_HEROKU_REQUEST_ID"]
+        dyno_start    = Time.now.to_f * 1000.0
+        request_start = (env["HTTP_X_REQUEST_START"] || 0).to_i
+        request_id    = env["HTTP_HEROKU_REQUEST_ID"]
         notify(stats) if should_notify?
-        $stdout.puts "at=metric measure=#{@instrument_name} request_id=#{request_id} request_start=#{env["HTTP_X_REQUEST_START"]} dyno_start=#{start_time}"
+        $stdout.puts "at=metric measure=#{@instrument_name} request_id=#{request_id} request_start=#{request_start} dyno_start=#{dyno_start} queue_time=#{dyno_start - request_start}"
 
-        status, headers, body = @app.call(env)
-        [status, headers, body]
+        @app.call(env)
       end
     end
   end
