@@ -9,8 +9,8 @@ module Rack
       def call(env)
         start_time   = Time.now.to_f*1000.0
         request_time = env["HTTP_X_REQUEST_START"] || 0
-
-        $stdout.puts "at=metric measure=#{@instrument_name} request_start=#{env["HTTP_X_REQUEST_START"]} dyno_start=#{start_time}"
+        request_id   = env["HTTP_HEROKU_REQUEST_ID"]
+        $stdout.puts "at=metric measure=#{@instrument_name} request_id=#{request_id} request_start=#{env["HTTP_X_REQUEST_START"]} dyno_start=#{start_time}"
 
         status, headers, body = @app.call(env)
         [status, headers, body]
