@@ -1,6 +1,10 @@
+require 'queue-metrics/notify'
+
 module Rack
   module QueueMetrics
     class QueueDepth
+      include Notify
+
       def initialize(app)
         @app = app
         @addr = IPSocket.getaddress(Socket.gethostname).to_s + ':'+ENV['PORT']
@@ -25,16 +29,6 @@ module Rack
                         "queue_depth=#{stats[:requests][:queued]}"].join(' '))
           sleep(interval)
         end
-      end
-
-      def should_notify?
-        if defined?(ActiveSupport::Notifications)
-          ActiveSupport::Notifications.notifier.listening?(@instrument_name)
-        end
-      end
-
-      def notify(data)
-        ActiveSupport::Notifications.instrument(@instrument_name, data)
       end
 
       def raindrops_stats
