@@ -1,13 +1,10 @@
-require 'socket'
-
 module Rack
   module QueueMetrics
-    class Middleware
-
+    class QueueDepth
       def initialize(app)
         @app = app
         @addr = IPSocket.getaddress(Socket.gethostname).to_s + ':'+ENV['PORT']
-        @instrument_name = "rack.queue-metrics"
+        @instrument_name = "rack.queue-metrics.queue-depth"
         Thread.new {report(1)}
       end
 
@@ -24,8 +21,8 @@ module Rack
           stats = raindrops_stats
           notify(stats) if should_notify?
           $stdout.puts(["measure=#{@instrument_name}",
-            "addr=#{@addr}",
-            "queue_depth=#{stats[:requests][:queued]}"].join(' '))
+                        "addr=#{@addr}",
+                        "queue_depth=#{stats[:requests][:queued]}"].join(' '))
           sleep(interval)
         end
       end
