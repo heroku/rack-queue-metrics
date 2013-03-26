@@ -5,6 +5,7 @@ module Rack
         app.middleware.use Rack::QueueMetrics::QueueTime
         app.middleware.use Raindrops::Middleware
         app.middleware.use Rack::QueueMetrics::QueueDepth
+        app.middleware.use Rack::QueueMetrics::AppTime
       end
     end
   end
