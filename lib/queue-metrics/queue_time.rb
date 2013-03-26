@@ -11,17 +11,17 @@ module Rack
       end
 
       def call(env)
-        dyno_start    = (Time.now.to_f * 1000.0).round
-        request_start = (env["HTTP_X_REQUEST_START"] || 0).to_i
-        request_id    = env["HTTP_HEROKU_REQUEST_ID"]
-        report = "at=metric measure=#{@instrument_name} dyno_start=#{dyno_start}"
-        report << " request_start=#{request_start} request_start_delta=#{dyno_start - request_start}" if request_start > 0
+        middleware_start = (Time.now.to_f * 1000.0).round
+        request_start    = (env["HTTP_X_REQUEST_START"] || 0).to_i
+        request_id       = env["HTTP_HEROKU_REQUEST_ID"]
+        report = "at=metric measure=#{@instrument_name} middleware_start=#{middleware_start}"
+        report << " request_start=#{request_start} request_start_delta=#{middleware_start - request_start}" if request_start > 0
         report << " request_id=#{request_id}" if request_id
         $stdout.puts report
 
-        notify(:dyno_start => dyno_start, :request_start => request_start, :request_id => request_id) if should_notify?
+        notify(:middleware_start => middleware_start, :request_start => request_start, :request_id => request_id) if should_notify?
 
-        env["HTTP_HEROKU_DYNO_START"] = dyno_start
+        env["MIDDLEWARE_START"] = middleware_start
 
         @app.call(env)
       end

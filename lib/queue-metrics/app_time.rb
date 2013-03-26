@@ -11,11 +11,11 @@ module Rack
       end
 
       def call(env)
-        app_start     = (Time.now.to_f * 1000.0).round
-        request_id    = env["HTTP_HEROKU_REQUEST_ID"]
-        dyno_start    = (env["HTTP_HEROKU_DYNO_START"] || 0).to_i
+        app_start        = (Time.now.to_f * 1000.0).round
+        request_id       = env["HTTP_HEROKU_REQUEST_ID"]
+        middleware_start = (env["MIDDLEWARE_START"] || 0).to_i
         report = "at=metric measure=#{@instrument_name}.start app_start=#{app_start}"
-        report << " middleware_delta=#{app_start - dyno_start}" if dyno_start > 0
+        report << " middleware_delta=#{app_start - middleware_start}" if middleware_start > 0
         report << " request_id=#{request_id}" if request_id
         $stdout.puts report
 
