@@ -21,6 +21,8 @@ module Rack
 
         notify(:dyno_start => dyno_start, :request_start => request_start, :request_id => request_id) if should_notify?
 
+        env["HTTP_HEROKU_DYNO_START"] = dyno_start
+
         @app.call(env)
       end
     end
