@@ -1,3 +1,5 @@
+require 'logger'
+require 'queue-metrics/l2met_formatter'
 require 'queue-metrics/notify'
 
 module Rack
@@ -5,10 +7,16 @@ module Rack
     class QueueDepth
       include Notify
 
-      def initialize(app)
-        @app = app
-        @addr = IPSocket.getaddress(Socket.gethostname).to_s + ':'+ENV['PORT']
+      def initialize(app, logger = nil)
+        @app             = app
+        @addr            = IPSocket.getaddress(Socket.gethostname).to_s + ':'+ENV['PORT']
         @instrument_name = "rack.queue-metrics.queue-depth"
+        @logger          = logger
+        if @logger.nil?
+          @logger = ::Logger.new($stdout)
+          @logger.formatter = L2MetFormatter.new
+        end
+
         Thread.new {report(1)}
       end
 
@@ -25,7 +33,7 @@ module Rack
           stats = raindrops_stats
           stats[:addr] = @addr
           notify(stats) if should_notify?
-          $stdout.puts(["measure=#{@instrument_name}",
+          @logger.info(["measure=#{@instrument_name}",
                         "addr=#{@addr}",
                         "queue_depth=#{stats[:requests][:queued]}"].join(' '))
           sleep(interval)
