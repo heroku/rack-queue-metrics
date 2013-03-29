@@ -23,6 +23,7 @@ module Rack
       def report(interval)
         loop do
           stats = raindrops_stats
+          stats[:addr] = @addr
           notify(stats) if should_notify?
           $stdout.puts(["measure=#{@instrument_name}",
                         "addr=#{@addr}",
