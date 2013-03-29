@@ -18,15 +18,19 @@ module Rack
       end
 
       def call(env)
-        middleware_start = (Time.now.to_f * 1000.0).round
-        request_start    = (env["HTTP_X_REQUEST_START"] || 0).to_i
-        request_id       = env["HTTP_HEROKU_REQUEST_ID"]
+        middleware_start    = (Time.now.to_f * 1000.0).round
+        request_start       = (env["HTTP_X_REQUEST_START"] || 0).to_i
+        request_id          = env["HTTP_HEROKU_REQUEST_ID"]
+        request_start_delta = nil
         report = "measure=#{@instrument_name} middleware_start=#{middleware_start}"
-        report << " request_start=#{request_start} request_start_delta=#{middleware_start - request_start}" if request_start > 0
+        if request_start > 0
+          request_start_delta = middleware_start - request_start
+          report << " request_start=#{request_start} request_start_delta=#{request_start_delta}"
+        end
         report << " request_id=#{request_id}" if request_id
         @logger.info report
 
-        notify(:middleware_start => middleware_start, :request_start => request_start, :request_id => request_id) if should_notify?
+        notify(:middleware_start => middleware_start, :request_start => request_start, :request_start_delta => request_start_delta, :request_id => request_id) if should_notify?
 
         env["MIDDLEWARE_START"] = middleware_start
 
