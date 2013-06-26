@@ -12,11 +12,11 @@ gem 'rack-queue-metrics'
 
 ### Rails
 
-You're done! If you want to instrument queue metrics beyond the default output, you can subscribe to the `unicorn.metrics.queue` notifcation in your Rails app. For example, to print queue information to your logs, add the following to `config/initializers/notifcations.rb:
+You're done! If you want to instrument queue metrics beyond the default output, you can subscribe to the `rack.queue-metrics` notifcation in your Rails app. For example, to print queue information to your logs, add the following to `config/initializers/notifcations.rb:
 
 ```
 # config/initializers/notifications.rb
-ActiveSupport::Notifications.subscribe(/unicorn.metrics.queue/) do |*args|
+ActiveSupport::Notifications.subscribe(/rack.queue-metrics/) do |*args|
   event = ActiveSupport::Notifications::Event.new(*args)
   payload = event.payload
 
@@ -53,7 +53,7 @@ at=metric measure=rack.queue-metrics addr=10.10.10.90:5000 queue_time=0 queue_de
 
 The following information is sent in the notification payload:
 
-* `requests[:active]`: Number of requests currently being processed by Unicorn at the start of the request
+* `requests[:active]`: Number of requests currently being processed by the dyno at the start of the request
 * `requests[:queued]`: Number of requests waiting to be processed at the start of the request
 * `queue_time`: Amount of time the current request spent in the queue
 * `addr`: Address of the dyno processing the request
