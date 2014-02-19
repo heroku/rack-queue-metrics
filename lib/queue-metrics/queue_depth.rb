@@ -1,5 +1,3 @@
-require 'logger'
-require 'queue-metrics/l2met_formatter'
 require 'queue-metrics/notify'
 
 module Rack
@@ -9,18 +7,30 @@ module Rack
 
       def initialize(app, logger = nil)
         @app             = app
-        @addr            = IPSocket.getaddress(Socket.gethostname).to_s + ':'+ENV['PORT']
+        @addr            = IPSocket.getaddress(Socket.gethostname).to_s + ':'+ENV['PORT'] rescue "unknown"
         @instrument_name = "rack.queue-metrics.queue-depth"
         @logger          = logger
         if @logger.nil?
           @logger = ::Logger.new($stdout)
-          @logger.formatter = L2MetFormatter.new
         end
 
-        Thread.new {report(1)}
+        interval = (ENV['RACK_QUEUE_METRICS_INTERVAL'] || 5).to_i
+
+        if interval <= 0
+          # then call on every request
+          @inline = true
+          @logger.info "-> rack-queue-metrics starting in inline mode"
+        else
+          # Do it in a separate thread
+          @inline = false
+          @logger.info "-> rack-queue-metrics starting in interval mode (#{interval}s)"
+          Thread.new {report_loop(interval)}
+        end
+
       end
 
       def call(env)
+        report(env["action_dispatch.request_id"]) if @inline
         return @app.call(env) unless ENV['PORT']
         status, headers, body = @app.call(env)
         [status, headers, body]
@@ -28,16 +38,24 @@ module Rack
 
     private
 
-      def report(interval)
+      def report_loop(interval)
         loop do
-          stats = raindrops_stats
-          stats[:addr] = @addr
-          notify(stats) if should_notify?
-          @logger.info(["measure=#{@instrument_name}",
-                        "addr=#{@addr}",
-                        "queue_depth=#{stats[:requests][:queued]}"].join(' '))
+          report
           sleep(interval)
         end
+      end
+
+      def report(request_id = nil)
+        stats = raindrops_stats
+        stats[:addr] = @addr
+        notify(stats) if should_notify?
+        stats = ["at=info",
+                  "addr=#{@addr}",
+                  "measure#requests.queued=#{stats[:requests][:queued]}",
+                  "measure#requests.active=#{stats[:requests][:active]}"]
+        stats << "request_id=#{request_id}" if request_id.present?
+
+        @logger.info(stats.join(' '))
       end
 
       def raindrops_stats
