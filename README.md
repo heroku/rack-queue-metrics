@@ -10,9 +10,10 @@ First, add `rack-queue-metrics` to your Gemfile:
 gem 'rack-queue-metrics'
 ```
 
+
 ### Rails
 
-You're done! If you want to instrument queue metrics beyond the default output, you can subscribe to the `rack.queue-metrics` notifcation in your Rails app. For example, to print queue information to your logs, add the following to `config/initializers/notifcations.rb:
+You're done! If you want to instrument queue metrics beyond the default output, you can subscribe to the `rack.queue-metrics` notifcation in your Rails app. For example, to print custom formatted queue information to your logs, add the following to `config/initializers/notifcations.rb:
 
 ```
 # config/initializers/notifications.rb
@@ -41,13 +42,15 @@ Include the `Raindrops` and `Rack::QueueMetrics` middleware in your application'
   use Rack::QueueMetrics::Middleware
 ```
 
-### Output
+## Output and Options
 
-With every request, `rack-queue-metrics` will output a log line with the the following format:
+By default, `rack-queue-metrics` will output this [Librato](https://metrics.librato.com/metrics) compatible log line every 5 seconds:
 
 ```
-at=metric measure=rack.queue-metrics addr=10.10.10.90:5000 queue_time=0 queue_depth=0
+at=info addr=10.10.10.90:5000 measure#requests.queued=0 measure#requests.active=0 [request_id=abcdef123456890]
 ```
+
+You can adjust the reporting interval by setting `RACK_QUEUE_METRICS_INTERVAL` in your environment. To enable reporting on every request (and include request IDs), set `RACK_QUEUE_METRICS_INTERVAL=0`.
 
 ## Notifications
 
