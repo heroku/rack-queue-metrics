@@ -9,7 +9,7 @@ module Rack
 
       def initialize(app, logger = nil)
         @app             = app
-        @addr            = IPSocket.getaddress(Socket.gethostname).to_s + ':'+ENV['PORT']
+        @addr            = getaddr
         @instrument_name = "rack.queue-metrics.queue-depth"
         @logger          = logger
         if @logger.nil?
@@ -27,6 +27,12 @@ module Rack
       end
 
     private
+
+      def getaddr
+        IPSocket.getaddress(Socket.gethostname).to_s + ':' + ENV['PORT']
+      rescue SocketError
+        nil
+      end
 
       def report(interval)
         loop do
