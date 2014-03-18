@@ -20,7 +20,7 @@ module Rack
       def call(env)
         middleware_start    = (Time.now.to_f * 1000.0).round
         request_start       = (env["HTTP_X_REQUEST_START"] || 0).to_i
-        request_id          = env["HTTP_HEROKU_REQUEST_ID"]
+        request_id          = env["HTTP_REQUEST_ID"]
         request_start_delta = nil
         report = "measure=#{@instrument_name} middleware_start=#{middleware_start}"
         if request_start > 0
