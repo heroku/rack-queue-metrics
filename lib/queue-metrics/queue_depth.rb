@@ -21,7 +21,7 @@ module Rack
       end
 
       def call(env)
-        return @app.call(env) unless ENV['PORT'].to_s
+        return @app.call(env) unless ENV['PORT']
         status, headers, body = @app.call(env)
         [status, headers, body]
       end
@@ -29,7 +29,7 @@ module Rack
     private
 
       def getaddr
-        IPSocket.getaddress(Socket.gethostname).to_s + ':' + ENV['PORT']
+        IPSocket.getaddress(Socket.gethostname).to_s + ':' + ENV['PORT'].to_s
       rescue SocketError
         nil
       end
