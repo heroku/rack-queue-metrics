@@ -21,7 +21,7 @@ module Rack
       end
 
       def call(env)
-        return @app.call(env) unless ENV['PORT']
+        return @app.call(env) unless ENV['PORT'].to_s
         status, headers, body = @app.call(env)
         [status, headers, body]
       end
