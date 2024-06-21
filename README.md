@@ -43,7 +43,7 @@ Include the `Raindrops` and `Rack::QueueMetrics` middleware in your application'
 
 ### Output
 
-With every request, `rack-queue-metrics` will output a log line with the the following format:
+With every request, `rack-queue-metrics` will output a log line with the following format:
 
 ```
 at=metric measure=rack.queue-metrics addr=10.10.10.90:5000 queue_time=0 queue_depth=0
